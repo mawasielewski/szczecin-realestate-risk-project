@@ -1,0 +1,4 @@
+Scenario,Primary_Expected_Price,Secondary_Expected_Price,Primary_VaR95,Secondary_VaR95,Primary_Prob_Decline,Secondary_Prob_Decline
+Baseline,13291.0,9264.0,-29.71,-32.25,37.4,45.6
+Adverse,9280.0,6840.0,-52.24,-51.26,87.3,86.8
+Severely Adverse,5315.0,3915.0,-74.31,-73.71,100.0,100.0
