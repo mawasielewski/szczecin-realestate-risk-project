@@ -57,6 +57,18 @@ Under the adverse scenario, prices are expected to fall around 23% with an 87% p
 **The market is showing early signs of cooling.**
 2025 NBP data shows secondary market transaction prices fell 1.55%, the first decline since 2015. Primary market growth slowed to just 1.98%. After years of rapid growth, the market may be entering a consolidation phase, which makes stress testing particularly timely.
 ## Regulatory Context
+One thing I wanted to make sure of with this project was that it wasn't just analytically interesting - it should be grounded in how real institutions actually think about property risk. This section reflects what I learned about the regulatory frameworks that govern real estate risk assessment in banking.
+
+**EBA Guidelines on Real Estate Collateral**
+The European Banking Authority requires banks to regularly monitor and stress test the value of real estate used as loan collateral. Learning about this framework shaped how I structured the three scenarios in this project - baseline, adverse, and severely adverse - which directly mirrors the EBA's own stress testing methodology for assessing how collateral values hold up under different economic conditions.
+
+**Basel III Capital Requirements**
+Studying Basel III helped me understand why the outputs of this project actually matter beyond the numbers themselves. Under Basel III, banks must hold capital against potential losses on mortgage portfolios. The probability of price decline and Value at Risk figures I calculated are exactly the kind of outputs that feed into a bank's Internal Ratings Based (IRB) approach to credit risk capital calculation.
+
+**NBP Real Estate Market Monitoring**
+One thing I appreciated while building this project was discovering that the National Bank of Poland publishes official quarterly real estate price data as part of its financial stability monitoring framework. Using this source rather than scraped or aggregated data means the historical analysis is calibrated against the same figures that Polish regulators and banks actually use, which felt important to get right.
+
+I want to be clear: this is a student project built on publicly available data and simplified assumptions. I am aware that a real bank model would incorporate far more granular data, additional risk factors, and rigorous model validation. But working through these frameworks taught me more about how banks actually think about real estate risk than any textbook could, and that was the whole point.
 ## Tools Used
 **Python** - core analysis engine. Libraries used: pandas (data manipulation), numpy (Monte Carlo simulation), scipy (statistical analysis).
 
