@@ -12,10 +12,10 @@ This project attempts to answer three questions:
 - How would collateral values deteriorate under baseline, adverse, and severely adverse economic scenarios?
   
 ## Data Sources
-**Otodom.pl — Current Market Listings (June 2026)**
+**Otodom.pl - Current Market Listings (June 2026)**
 160 property listings I have manually collected from Poland's largest real estate portal, covering both primary (rynek deweloperski) and secondary (rynek wtórny) markets across 35 Szczecin districts. Variables collected: asking price (PLN), size (m²), price per m², district, number of rooms, and market type.
 
-**Narodowy Bank Polski (NBP) — Historical Transaction Prices**
+**Narodowy Bank Polski (NBP) - Historical Transaction Prices**
 Official quarterly transaction price data for Szczecin published by the National Bank of Poland, covering both primary and secondary markets from 2006 to 2025. This is the same data source used by Polish banks and regulators to monitor real estate market conditions. Available at: nbp.pl
 
 **Data Processing**
@@ -58,4 +58,24 @@ Under the adverse scenario, prices are expected to fall around 23% with an 87% p
 2025 NBP data shows secondary market transaction prices fell 1.55%, the first decline since 2015. Primary market growth slowed to just 1.98%. After years of rapid growth, the market may be entering a consolidation phase, which makes stress testing particularly timely.
 ## Regulatory Context
 ## Tools Used
+**Python** - core analysis engine. Libraries used: pandas (data manipulation), numpy (Monte Carlo simulation), scipy (statistical analysis).
+
+**Excel + PowerQuery** - data cleaning and transformation pipeline. PowerQuery was used to remove duplicates, standardise district names, and add derived price and size categories before passing clean data to Python.
+
+**Power BI** - final dashboard and visualisation layer. District risk scorecard, Monte Carlo scenario comparison, and NBP historical price trends presented as interactive visuals. *(Dashboard in progress - to be added shortly)*
+
+**Git + GitHub** - version control and portfolio hosting.
+
+**Data sources** - Otodom.pl (current listings), Narodowy Bank Polski (historical transaction prices).
 ## Limitations
+No model is perfect, and I think being upfront about assumptions is actually part of good risk analysis - it's something model validation teams actively look for.
+
+The 160 listings collected from Otodom represent asking prices rather than final transaction prices. Sellers often list slightly above what buyers eventually pay, which means the current market snapshot may modestly overstate true values. That said, comparing these against NBP transaction prices gives a useful sense of the gap between what sellers want and what the market delivers.
+
+The Monte Carlo simulation uses historical volatility as a fixed parameter, which is a deliberate simplification. In reality, volatility changes over time - spiking during crises and compressing during calm periods. A more sophisticated model would incorporate time-varying volatility, and extending this project in that direction is something I'm genuinely interested in doing.
+
+Some districts in the risk scorecard are based on relatively few listings, which means their scores should be treated as indicative rather than definitive. The districts with 10 or more listings - Gumieńce, Łasztownia, Międzyodrze-Wyspa Pucka, Słoneczne - carry the most statistical weight and I'm most confident in those findings.
+
+Finally, the forward-looking scenarios don't explicitly model macroeconomic drivers like interest rate changes or unemployment. The NBP historical data implicitly captures how the market responded to those factors in the past, but the future scenarios are intentionally kept simple and transparent so the methodology is easy to follow and challenge.
+
+These are the kinds of assumptions I'd want to refine with more data and time - and knowing where a model's boundaries are is, I think, just as important as building it in the first place. I am planning to add listings over the coming weeks to strengthen the district-level analysis - particularly for smaller neighbourhoods where the current sample size is thin.
