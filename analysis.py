@@ -22,6 +22,33 @@ print(f"NBP historical data loaded: {len(nbp)} rows")
 print(f"\nListings columns: {df.columns.tolist()}")
 print(f"NBP columns: {nbp.columns.tolist()}")
 
+# ============================================================
+# NEW: Auto-categorization (replaces manual Price/Size Category entry)
+# Bands based on natural gaps found in the original 160-listing sample
+# ============================================================
+def categorize_price(price_per_m2):
+    if price_per_m2 < 8000:
+        return 'Tani'
+    elif price_per_m2 < 10000:
+        return 'Średni'
+    elif price_per_m2 < 13000:
+        return 'Drogi'
+    else:
+        return 'Premium'
+
+def categorize_size(size_m2):
+    if size_m2 < 35:
+        return 'Kawalerka'
+    elif size_m2 < 60:
+        return 'Średnie'
+    elif size_m2 < 90:
+        return 'Duże'
+    else:
+        return 'Bardzo duże'
+
+df['Price Category'] = df['Price/m2'].apply(categorize_price)
+df['Size Category'] = df['Size (m2)'].apply(categorize_size)
+
 #Basic statistics
 print("CURRENT MARKET OVERVIEW")
 print(f"Average Price/m2: {df['Price/m2'].mean():,.0f} PLN")
@@ -41,6 +68,9 @@ print(district_avg.head(10))
 
 print("\nPRICE CATEGORY DISTRIBUTION")
 print(df['Price Category'].value_counts())
+
+print("\nSIZE CATEGORY DISTRIBUTION")
+print(df['Size Category'].value_counts())
 
 #NBP historical analysis
 nbp['Pierwotny_Change'] = nbp['Pierwotny (PLN/m2)'].pct_change() * 100
@@ -151,15 +181,30 @@ district_risk['Risk_Score'] = (
     (district_risk['Avg_Price_m2'] / district_risk['Avg_Price_m2'].max() * 50)
 ).round(2)
 
-#RAG rating
-district_risk['RAG'] = district_risk['Risk_Score'].apply(
-    lambda x: 'High' if x > 66 else ('Medium' if x > 33 else 'Low')
+# ============================================================
+# CHANGED: RAG rating now uses terciles (relative ranking) instead
+# of fixed absolute thresholds (>66 / >33), so the classification
+# always produces a spread across High/Medium/Low regardless of
+# where the absolute scores happen to fall.
+# ============================================================
+district_risk['RAG'] = pd.qcut(
+    district_risk['Risk_Score'],
+    q=3,
+    labels=['Low', 'Medium', 'High']
+)
+
+# ============================================================
+# NEW: Sample confidence flag — flags how much weight the CV/Risk
+# Score for a district should be given, based on sample size.
+# ============================================================
+district_risk['Sample_Confidence'] = district_risk['Listings'].apply(
+    lambda x: 'Low' if x < 10 else ('Medium' if x < 20 else 'High')
 )
 
 district_risk = district_risk.sort_values('Risk_Score', ascending=False)
 
 print("DISTRICT RISK SCORECARD")
-print(district_risk[['Avg_Price_m2', 'CV', 'Risk_Score', 'RAG', 'Listings']].to_string())
+print(district_risk[['Avg_Price_m2', 'CV', 'Risk_Score', 'RAG', 'Sample_Confidence', 'Listings']].to_string())
 
 #Export results for Power BI
 district_risk.reset_index(inplace=True)
