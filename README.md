@@ -8,8 +8,8 @@ This project combines 639 current property listings from Otodom.pl with 20 years
 ## Business Problem
 Banks and lenders holding mortgages need to understand how much capital is at risk if property values decline, and which areas of a city carry more risk than others. This project answers two questions from that perspective:
 
-1. **District-level**: which parts of Szczecin represent higher collateral risk, and why?
-2. **City-wide**: under a range of economic stress scenarios, how much could Szczecin property values fall, and how likely is that decline?
+1. **District-level**: Which parts of Szczecin represent higher collateral risk, and why?
+2. **City-wide**: Under a range of economic stress scenarios, how much could Szczecin property values fall, and how likely is that decline?
 
 The goal isn't to judge which neighbourhoods are "nicer." It's to model capital exposure and price uncertainty the way a lender's risk team would.
 
