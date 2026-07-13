@@ -6,7 +6,7 @@ With the study year finished, I've been exploring risk analysis and how financia
 This project combines 600+ current property listings from Otodom.pl with 20 years of official NBP transaction price data to build a district-level risk model, a 10,000-path Monte Carlo stress test, and a RAG-rated scorecard covering 19 Szczecin districts. Built using Python, Excel, Power Query, and Power BI, with the district scorecard inspired by EBA real estate collateral principles and the stress test scenarios structured on the US Federal Reserve's CCAR/DFAST convention (see Regulatory Context below).
 
 ## Dashboard Preview
-![Page 1 - Market Overview](marketoverview.png)
+![Page 1 - Market Overview](ss/marketoverview.png)
 ![Page 2 - Price Trends](path/to/page2.png)
 ![Page 3 - Monte Carlo](path/to/page3.png)
 
