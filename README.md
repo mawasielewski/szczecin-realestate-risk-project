@@ -3,7 +3,7 @@
 ## Overview
 With the study year finished, I've been exploring risk analysis and how financial institutions assess risk on a day-to-day basis. Being born and raised in Szczecin, Poland, I wanted to find out how risky it actually is to invest in my home city's real estate market, and more importantly, how a bank holding mortgages on Szczecin properties would stress test that exposure.
 
-This project combines 639 current property listings from Otodom.pl with 20 years of official NBP transaction price data to build a district-level risk model, a 10,000-path Monte Carlo stress test, and a RAG-rated scorecard covering 19 Szczecin districts. Built using Python, Excel, Power Query, and Power BI, with the district scorecard inspired by EBA real estate collateral principles and the stress test scenarios structured on the US Federal Reserve's CCAR/DFAST convention (see Regulatory Context below).
+This project combines 600+ current property listings from Otodom.pl with 20 years of official NBP transaction price data to build a district-level risk model, a 10,000-path Monte Carlo stress test, and a RAG-rated scorecard covering 19 Szczecin districts. Built using Python, Excel, Power Query, and Power BI, with the district scorecard inspired by EBA real estate collateral principles and the stress test scenarios structured on the US Federal Reserve's CCAR/DFAST convention (see Regulatory Context below).
 
 ## Business Problem
 Banks and lenders holding mortgages need to understand how much capital is at risk if property values decline, and which areas of a city carry more risk than others. This project answers two questions from that perspective:
