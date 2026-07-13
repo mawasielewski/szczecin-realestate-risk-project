@@ -7,8 +7,8 @@ This project combines 600+ current property listings from Otodom.pl with 20 year
 
 ## Dashboard Preview
 ![Page 1 - Market Overview](marketoverview.png)
-![Page 2 - Price Trends](path/to/page2.png)
-![Page 3 - Monte Carlo](path/to/page3.png)
+![Page 2 - Price Trends](pricetrends.png)
+![Page 3 - Monte Carlo](montecarlo.png)
 
 ## Business Problem
 Banks and lenders holding mortgages need to understand how much capital is at risk if property values decline, and which areas of a city carry more risk than others. This project answers two questions from that perspective:
