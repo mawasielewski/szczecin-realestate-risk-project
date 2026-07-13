@@ -1,93 +1,72 @@
 # Szczecin Real Estate Risk Model
 
 ## Overview
-With the study year finished, I've been exploring risk analysis and how financial institutions assess risk on a day-to-day basis. Being born and raised in Szczecin, Poland, I wanted to find out how risky it actually is to invest in my home city's real estate market - and more importantly, how a bank holding mortgages on Szczecin properties would stress test that exposure.
-This project combines 160 current property listings from Otodom.pl with 20 years of official NBP transaction price data to build a district-level risk model, Monte Carlo stress test, and RAG-rated scorecard of Szczecin neighbourhoods. Built using Python, Excel, PowerQuery, and Power BI - with findings framed against EBA real estate collateral guidelines.
+With the study year finished, I've been exploring risk analysis and how financial institutions assess risk on a day-to-day basis. Being born and raised in Szczecin, Poland, I wanted to find out how risky it actually is to invest in my home city's real estate market, and more importantly, how a bank holding mortgages on Szczecin properties would stress test that exposure.
+
+This project combines 639 current property listings from Otodom.pl with 20 years of official NBP transaction price data to build a district-level risk model, a 10,000-path Monte Carlo stress test, and a RAG-rated scorecard covering 19 Szczecin districts. Built using Python, Excel, Power Query, and Power BI, with findings framed against EBA real estate collateral guidelines.
+
 ## Business Problem
-When a bank issues a mortgage, the property acts as collateral. If property values fall, the bank's collateral deteriorates, increasing the risk of loss if the borrower defaults. Understanding which districts carry the most price risk, and how the overall market behaves under stress, is therefore a core function of any bank's risk team.
+Banks and lenders holding mortgages need to understand how much capital is at risk if property values decline, and which areas of a city carry more risk than others. This project answers two questions from that perspective:
 
-This project attempts to answer three questions:
-- Which Szczecin districts carry the highest price risk for a bank holding mortgages?
-- How volatile has the Szczecin market been historically, and what does that imply for future price paths?
-- How would collateral values deteriorate under baseline, adverse, and severely adverse economic scenarios?
-  
+1. **District-level**: which parts of Szczecin represent higher collateral risk, and why?
+2. **City-wide**: under a range of economic stress scenarios, how much could Szczecin property values fall, and how likely is that decline?
+
+The goal isn't to judge which neighbourhoods are "nicer." It's to model capital exposure and price uncertainty the way a lender's risk team would.
+
 ## Data Sources
-**Otodom.pl - Current Market Listings (June 2026)**
-160 property listings I have manually collected from Poland's largest real estate portal, covering both primary (rynek deweloperski) and secondary (rynek wtórny) markets across 35 Szczecin districts. Variables collected: asking price (PLN), size (m²), price per m², district, number of rooms, and market type.
-
-**Narodowy Bank Polski (NBP) - Historical Transaction Prices**
-Official quarterly transaction price data for Szczecin published by the National Bank of Poland, covering both primary and secondary markets from 2006 to 2025. This is the same data source used by Polish banks and regulators to monitor real estate market conditions. Available at: nbp.pl
-
-**Data Processing**
-Raw listing data was cleaned and transformed using PowerQuery in Excel - I had removed duplicates, standardised district names, and added derived categories (Price Category, Size Category) before loading into Python for analysis.
+- **Otodom.pl listings** (639 current property listings, collected across 19 Szczecin districts, minimum 30 listings per district after data collection)
+- **NBP (Narodowy Bank Polski) historical transaction data**: 20 years (2006-2025) of average price/m² for Szczecin's primary and secondary markets
 
 ## Methodology
 
-### 1. Exploratory Data Analysis
-The first step was simply getting to know the data. I analysed current market listings to understand how prices are distributed across Szczecin's districts, how the primary and secondary markets compare, and where price variation is highest within individual neighbourhoods. Districts with fewer than 3 listings were excluded to keep the analysis grounded in reliable data rather than outliers.
+**District Risk Scorecard**
 
-### 2. Historical Volatility Analysis
-To understand how the Szczecin market has actually behaved over time, I used 20 years of official NBP transaction price data to calculate annual price changes for both market types. Rather than making assumptions about volatility, I let the real data speak - standard deviation of annual returns gave me a historically calibrated measure of market uncertainty. The result: Szczecin's primary market has carried approximately 11% annual volatility over the past two decades.
+Each district's risk score combines two equally-weighted factors (50 points each):
+- **Price volatility (CV)**: the coefficient of variation of listing prices within the district, capturing price dispersion/unpredictability
+- **Price level**: average price/m², capturing capital exposure (higher-value properties represent larger absolute losses if prices fall)
 
-### 3. Monte Carlo Stress Testing
-This is where it got interesting. Using historical volatility to calibrate random price shocks, I ran 10,000 simulations of how property prices could evolve over the next 5 years. Three scenarios were tested:
+Districts are classified into **High / Medium / Low** risk using tercile splits (`pd.qcut`) on the composite Risk Score, rather than fixed absolute thresholds. This ensures a meaningful, relative spread across categories regardless of the underlying score distribution.
 
-- **Baseline** - modest growth (2% primary, 1% secondary annual drift)
-- **Adverse** - moderate correction (-5% annual drift)
-- **Severely Adverse** - sharp decline (-15% annual drift)
+**Monte Carlo Stress Test**
 
-For each scenario I calculated the expected price in 5 years, the worst-case outcome in 95% of simulations, and the likelihood of prices falling at all. This paints a fuller picture of risk rather than just saying 'prices will go up or down by X%'.
+10,000 simulated 5-year price paths were generated for both primary and secondary markets, using historical volatility derived from the NBP series, across three scenarios:
+- **Baseline** (modest growth)
+- **Adverse** (moderate decline)
+- **Severely Adverse** (sharp decline)
 
-### 4. District Risk Scoring
-Finally, I built a risk scorecard for each Szczecin district by combining two factors: price level (higher prices mean greater absolute loss potential) and coefficient of variation (how much prices vary within a district - a proxy for uncertainty). Each district was then classified into a RAG framework - High, Medium, or Low risk to produce something a portfolio manager could actually use.
+Value at Risk (VaR) at the 95% confidence level was calculated per scenario, representing the price decline that would only be exceeded in the worst 5% of simulated outcomes.
+
+**Candidate risk factors, tested and reassessed**
+
+Beyond price and volatility, I tested four additional variables as potential risk factors: distance to city centre, listing density (liquidity proxy), average property size, and primary/secondary market mix. Rather than including a variable because it seemed intuitively plausible, each was tested for correlation with existing risk metrics before being added or excluded. See Limitations below for the full results, including how these findings changed as the dataset grew.
 
 ## Key Findings
-**The market is more divided than it looks.**
-Primary market properties (new builds) are on average 29% more expensive than secondary market properties: 12,725 PLN/m² vs 9,867 PLN/m². This gap matters for banks because new builds carry higher absolute loss potential if prices correct.
 
-**Not all expensive districts are the most risky.**
-Śródmieście-Północ topped the risk scorecard despite not being the most expensive district, because prices within it vary wildly (coefficient of variation of 59%). A bank holding mortgages there faces high uncertainty even before any market downturn. By contrast, Łasztownia and Zawadzkiego-Klonowica are expensive but consistent, offering lower uncertainty for the same price level.
+- **Highest-risk district: Śródmieście-Północ** (Risk Score 97.9), driven almost entirely by price level (the highest average price/m² of any district) combined with the widest price dispersion in the sample. This is not the "worst" neighbourhood in a conventional sense; it reflects high capital exposure, not declining desirability.
+- **Risk clusters geographically**: high-risk districts sit predominantly in central Szczecin, while lower-risk districts are concentrated on the periphery.
+- **Historical volatility is modest**: even through the 2008 financial crisis, Szczecin's worst single-year price decline was -6.3% (primary market, 2010), a mild correction rather than a crash. The sharpest historical price movements were actually on the upside (+39.6% in 2007, +23.8% in 2022), suggesting the city's price risk has historically been driven more by rapid growth phases than severe downturns.
+- **Stress scenarios escalate sharply**: 5-year VaR (95%) ranges from -29.7% (Baseline) to -74.3% (Severely Adverse). Probability of any price decline rises from 37% (Baseline) to 100% (Severely Adverse); under severe stress, a decline isn't just larger, it becomes near-certain.
 
-**Even in a good scenario, decline is possible.**
-Under the baseline scenario of modest growth, there is still a 37-45% probability of prices being lower in 5 years than today. The Szczecin market is not a one-way bet, even without a recession.
-
-**Stress scenarios reveal significant tail risk.**
-Under the adverse scenario, prices are expected to fall around 23% with an 87% probability of any decline. Under the severely adverse scenario, prices fall around 56% on average with a 100% probability of decline. For a bank with significant Szczecin mortgage exposure, these are material risk figures.
-
-**The market is showing early signs of cooling.**
-2025 NBP data shows secondary market transaction prices fell 1.55%, the first decline since 2015. Primary market growth slowed to just 1.98%. After years of rapid growth, the market may be entering a consolidation phase, which makes stress testing particularly timely.
 ## Regulatory Context
-One thing I wanted to make sure of with this project was that it wasn't just analytically interesting - it should be grounded in how real institutions actually think about property risk. This section reflects what I learned about the regulatory frameworks that govern real estate risk assessment in banking.
+This project's framing is informed by EBA (European Banking Authority) guidance on real estate as loan collateral, which emphasises assessing both the value and the volatility of collateral when determining capital requirements and loss-given-default assumptions. The district Risk Score's combination of price level (exposure) and price volatility (uncertainty) reflects this two-factor logic, though this project is an independent learning exercise and does not implement the EBA framework in full regulatory detail.
 
-**EBA Guidelines on Real Estate Collateral**
-The European Banking Authority requires banks to regularly monitor and stress test the value of real estate used as loan collateral. Learning about this framework shaped how I structured the three scenarios in this project - baseline, adverse, and severely adverse - which directly mirrors the EBA's own stress testing methodology for assessing how collateral values hold up under different economic conditions.
-
-**Basel III Capital Requirements**
-Studying Basel III helped me understand why the outputs of this project actually matter beyond the numbers themselves. Under Basel III, banks must hold capital against potential losses on mortgage portfolios. The probability of price decline and Value at Risk figures I calculated are exactly the kind of outputs that feed into a bank's Internal Ratings Based (IRB) approach to credit risk capital calculation.
-
-**NBP Real Estate Market Monitoring**
-One thing I appreciated while building this project was discovering that the National Bank of Poland publishes official quarterly real estate price data as part of its financial stability monitoring framework. Using this source rather than scraped or aggregated data means the historical analysis is calibrated against the same figures that Polish regulators and banks actually use, which felt important to get right.
-
-I want to be clear: this is a student project built on publicly available data and simplified assumptions. I am aware that a real bank model would incorporate far more granular data, additional risk factors, and rigorous model validation. But working through these frameworks taught me more about how banks actually think about real estate risk than any textbook could, and that was the whole point.
 ## Tools Used
-**Python** - core analysis engine. Libraries used: pandas (data manipulation), numpy (Monte Carlo simulation), scipy (statistical analysis).
+- **Python** (pandas, NumPy, SciPy): data cleaning, Monte Carlo simulation, statistical testing
+- **Excel / Power Query**: data collection and preparation
+- **Power BI** (DAX, custom theming): interactive 3-page dashboard, including a district risk map and scorecard, 20-year price trend and volatility analysis, and Monte Carlo/VaR comparison
 
-**Excel + PowerQuery** - data cleaning and transformation pipeline. PowerQuery was used to remove duplicates, standardise district names, and add derived price and size categories before passing clean data to Python.
-
-**Power BI** - final dashboard and visualisation layer. District risk scorecard, Monte Carlo scenario comparison, and NBP historical price trends presented as interactive visuals. *(Dashboard in progress - to be added shortly)*
-
-**Git + GitHub** - version control and portfolio hosting.
-
-**Data sources** - Otodom.pl (current listings), Narodowy Bank Polski (historical transaction prices).
 ## Limitations
-No model is perfect, and I think being upfront about assumptions is actually part of good risk analysis - it's something model validation teams actively look for.
 
-The 160 listings collected from Otodom represent asking prices rather than final transaction prices. Sellers often list slightly above what buyers eventually pay, which means the current market snapshot may modestly overstate true values. That said, comparing these against NBP transaction prices gives a useful sense of the gap between what sellers want and what the market delivers.
+**Sample coverage**: Podjuchy was excluded from the final scorecard due to insufficient available listings (fewer than 30 at the time of collection) to produce a statistically reliable estimate, reflecting a comparatively illiquid segment of the local market. All 19 remaining districts have a minimum of 30 listings.
 
-The Monte Carlo simulation uses historical volatility as a fixed parameter, which is a deliberate simplification. In reality, volatility changes over time - spiking during crises and compressing during calm periods. A more sophisticated model would incorporate time-varying volatility, and extending this project in that direction is something I'm genuinely interested in doing.
+**Candidate risk factors, full results**: Four additional variables were tested for correlation with district-level CV and Risk Score.
+- *Listing density* (liquidity proxy): no meaningful correlation (r ≈ -0.07 to -0.08); rejected.
+- *Average property size*: no meaningful correlation with CV or Risk Score (r ≈ 0.06 and -0.18 respectively); rejected.
+- *Primary/secondary market mix*: weak on the original, smaller sample; moderate (r ≈ 0.34 with Risk Score) once the dataset reached full 30+ listings per district. Not incorporated into the current Risk Score formula, but flagged as worth further investigation with a larger sample.
+- *Distance to city centre*: weak on the original, smaller sample (r ≈ -0.22); moderate (r ≈ -0.30 with Risk Score, -0.43 with CV) once the dataset reached full 30+ listings per district. This shift illustrates that correlation estimates from small samples (some districts originally had as few as 3-8 listings) can be unreliable, and conclusions should be re-tested as data improves rather than treated as final.
 
-Some districts in the risk scorecard are based on relatively few listings, which means their scores should be treated as indicative rather than definitive. The districts with 10 or more listings - Gumieńce, Łasztownia, Międzyodrze-Wyspa Pucka, Słoneczne - carry the most statistical weight and I'm most confident in those findings.
+**Data quality**: One listing (Drzetowo-Grabowo) initially contained a data entry error in its Price/m² field, which inflated that district's apparent volatility (CV 36.4, corrected to 32.0) and Risk Score (63.4, corrected to 60.0) before being identified and corrected. This is noted as a reminder that composite scores built from many small inputs are sensitive to individual data entry errors, and spot-checking outlier rows is a necessary step before drawing conclusions from a scorecard like this one.
 
-Finally, the forward-looking scenarios don't explicitly model macroeconomic drivers like interest rate changes or unemployment. The NBP historical data implicitly captures how the market responded to those factors in the past, but the future scenarios are intentionally kept simple and transparent so the methodology is easy to follow and challenge.
+**Monte Carlo scenario assumptions**: Baseline/Adverse/Severely Adverse drift assumptions are illustrative, chosen to represent plausible directional scenarios rather than calibrated to a specific macroeconomic model or forecast.
 
-These are the kinds of assumptions I'd want to refine with more data and time - and knowing where a model's boundaries are is, I think, just as important as building it in the first place. I am planning to add listings over the coming weeks to strengthen the district-level analysis - particularly for smaller neighbourhoods where the current sample size is thin.
+**Volatility measurement**: District-level "volatility" (CV) reflects the *cross-sectional dispersion* of current listing prices within a district at one point in time, not a time-series measure. This is distinct from the NBP-based historical volatility (year-over-year price change over 20 years) used in the Monte Carlo simulation. The two should not be conflated.
